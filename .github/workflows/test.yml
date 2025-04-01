@@ -17,9 +17,9 @@ jobs:
     - name: Authenticate with Power Platform
       shell: pwsh
       run: |
-        pac auth create --client-id ${{ secrets.CLIENT_ID }} \
-                        --tenant ${{ secrets.TENANT_ID }} \
-                        --client-secret ${{ secrets.CLIENT_SECRET }} \
+        pac auth create --client-id ${{ secrets.CLIENT_ID }}
+                        --tenant ${{ secrets.TENANT_ID }}
+                        --client-secret ${{ secrets.CLIENT_SECRET }}
                         --url "https://org9df2a3ac.crm.dynamics.com"
                         
     - name: Export Solution from Source Environment
