@@ -28,9 +28,10 @@ jobs:
     - name: Unpack Solution
       uses: microsoft/powerplatform-actions/unpack-solution@v1
       with:
-        solution-file: "exported-solution.zip"
-        solution-folder: "./sourceControl"
-        solution-type: "Unmanaged"
+        solution-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
+        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
+        solution-type: 'Unmanaged'
+        overwrite-files: true
     
     - name: Pack solution
       uses: microsoft/powerplatform-actions/pack-solution@v1
