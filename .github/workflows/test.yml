@@ -15,6 +15,7 @@ jobs:
       uses: microsoft/powerplatform-actions/actions-install@v1
         
     - name: Authenticate with Power Platform
+      shell: pwsh
       run: |
         pac auth create --client-id ${{ secrets.CLIENT_ID }} \
                         --tenant ${{ secrets.TENANT_ID }} \
