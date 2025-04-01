@@ -3,17 +3,18 @@ on:
   push:
     branches:
       - main  # Runs when code is pushed to main branch
+
 jobs:
   deploy:
     runs-on: ubuntu-latest  # Uses a Linux runner
-    
+
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-      
-    - name: Install Power Platform tools
-      uses: microsoft/powerplatform-actions/actions-install@v1
-        
+
+    - name: Install Power Platform CLI
+      run: npm install -g pac
+
     - name: Authenticate with Power Platform
       shell: pwsh
       run: |
@@ -21,6 +22,7 @@ jobs:
                         --tenant "${{ secrets.TENANT_ID }}" `
                         --client-secret "${{ secrets.CLIENT_SECRET }}" `
                         --url "https://org9df2a3ac.crm.dynamics.com"
+
 
                         
     - name: Export Solution from Source Environment
