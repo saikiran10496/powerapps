@@ -12,7 +12,7 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Export Solution
-      uses: microsoft/powerplatform-actions/export-solution@v0
+      uses: microsoft/powerplatform-actions/export-solution@v1
       with:
         environment-url: "https://org9df2a3ac.crm.dynamics.com"
         app-id: ${{ secrets.CLIENT_ID }}
@@ -23,21 +23,21 @@ jobs:
         managed: false
     
     - name: Unpack Solution
-      uses: microsoft/powerplatform-actions/unpack-solution@v0
+      uses: microsoft/powerplatform-actions/unpack-solution@v1
       with:
         solution-file: "exported-solution.zip"
         solution-folder: "./sourceControl"
         solution-type: "Unmanaged"
     
     - name: Pack Solution
-      uses: microsoft/powerplatform-actions/pack-solution@v0
+      uses: microsoft/powerplatform-actions/pack-solution@v1
       with:
         solution-folder: "./sourceControl"
         solution-file: "packed-solution.zip"
         solution-type: "Unmanaged"
     
     - name: Import Solution
-      uses: microsoft/powerplatform-actions/import-solution@v0
+      uses: microsoft/powerplatform-actions/import-solution@v1
       with:
         environment-url: "https://org9df2a3ac.crm.dynamics.com"
         app-id: ${{ secrets.CLIENT_ID }}
