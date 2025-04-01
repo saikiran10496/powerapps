@@ -28,8 +28,8 @@ jobs:
     - name: Unpack Solution
       uses: microsoft/powerplatform-actions/unpack-solution@v1
       with:
-        solution-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
-        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
+        solution-file: ${{ inputs.solution_exported_folder}}/${{ inputs.solution_name }}.zip
+        solution-folder: ${{ inputs.solution_folder}}/${{ inputs.solution_name }}
         solution-type: 'Unmanaged'
         overwrite-files: true
     
