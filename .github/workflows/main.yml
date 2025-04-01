@@ -42,7 +42,7 @@ jobs:
     - name: Import Solution
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
-        environment-url: "https://org9df2a3ac.crm.dynamics.com"
+        environment-url: "https://org4174b73a.crm.dynamics.com"
         app-id: ${{ secrets.CLIENT_ID }}
         client-secret: ${{ secrets.CLIENT_SECRET }}
         tenant-id: ${{ secrets.TENANT_ID }}
