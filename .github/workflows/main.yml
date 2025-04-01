@@ -45,7 +45,7 @@ jobs:
     - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
-        environment-url: ${{inputs.BUILD_ENVIRONMENT_URL}}
+        environment-url: "https://org4174b73a.crm.dynamics.com"
         app-id: ${{inputs.CLIENT_ID}}
         client-secret: ${{ secrets.envSecret }}
         tenant-id: ${{inputs.TENANT_ID}}
