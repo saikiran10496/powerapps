@@ -34,7 +34,7 @@ jobs:
       with:
         solution-folder: "./sourceControl"
         solution-file: "packed-solution.zip"
-        solution-type: "Managed"
+        solution-type: "Unmanaged"
     
     - name: Import Solution
       uses: microsoft/powerplatform-actions/import-solution@v0
