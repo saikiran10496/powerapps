@@ -49,3 +49,4 @@ jobs:
         solution-file: "packed-solution.zip"
         activate-plugins: true
         force-overwrite: true
+        async: true
