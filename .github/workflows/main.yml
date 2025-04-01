@@ -32,22 +32,21 @@ jobs:
         solution-folder: "./sourceControl"
         solution-type: "Unmanaged"
     
-    - name: Pack Solution
+    - name: Pack solution
       uses: microsoft/powerplatform-actions/pack-solution@v1
       with:
-        solution-folder: "./sourceControl"
-        solution-file: "packed-solution.zip"
-        solution-type: "Unmanaged"
-    
-    - name: Import Solution
+        solution-folder: ${{ inputs.solution_source_folder}}/${{ inputs.solution_name }}
+        solution-file: ${{ inputs.solution_outbound_folder}}/${{ inputs.solution_name }}.zip
+        solution-type: Unmanaged
+
+    - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
-        environment-url: "https://org4174b73a.crm.dynamics.com"
-        solution-name: "sol1"
-        app-id: ${{ secrets.CLIENT_ID }}
-        client-secret: ${{ secrets.CLIENT_SECRET }}
-        tenant-id: ${{ secrets.TENANT_ID }}
-        solution-file: "packed-solution.zip"
+        environment-url: ${{inputs.BUILD_ENVIRONMENT_URL}}
+        app-id: ${{inputs.CLIENT_ID}}
+        client-secret: ${{ secrets.envSecret }}
+        tenant-id: ${{inputs.TENANT_ID}}
+        solution-file: ${{ inputs.solution_outbound_folder}}/${{ inputs.solution_name }}.zip
         force-overwrite: true
         publish-changes: true
 
