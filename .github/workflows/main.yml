@@ -30,16 +30,16 @@ jobs:
     - name: Unpack Solution
       uses: microsoft/powerplatform-actions/unpack-solution@v1
       with:
-        solution-file: ${{ inputs.solution_exported_folder}}/${{ inputs.solution_name }}.zip
-        solution-folder: ${{ inputs.solution_folder}}/${{ inputs.solution_name }}
+        solution-file: Games/sol1.zip
+        solution-folder: Games/sol1
         solution-type: 'Unmanaged'
         overwrite-files: true
     
     - name: Pack solution
       uses: microsoft/powerplatform-actions/pack-solution@v1
       with:
-        solution-folder: ${{ inputs.solution_source_folder}}/${{ inputs.solution_name }}
-        solution-file: ${{ inputs.solution_outbound_folder}}/${{ inputs.solution_name }}.zip
+        solution-folder: Games/sol1
+        solution-file: Games/sol1.zip
         solution-type: Unmanaged
 
     - name: Import solution as unmanaged to build env
