@@ -13,7 +13,7 @@ jobs:
       
     - name: Install Power Platform CLI (PAC)
       run: |
-        npm install -g pac-cli  # Install PAC CLI globally
+        npm install -g @microsoft/powerapps-cli  # Install PAC CLI globally
         pac --version  # Verify installation
         
     - name: Authenticate with Power Platform
