@@ -49,4 +49,11 @@ jobs:
         solution-file: "packed-solution.zip"
         activate-plugins: true
         force-overwrite: true
-        async: true
+
+    - name: Publish Customizations in Target Env
+      uses: microsoft/powerplatform-actions/publish-customizations@v1
+      with:
+        environment-url: "https://org4174b73a.crm.dynamics.com" 
+        app-id: ${{ secrets.CLIENT_ID }}
+        client-secret: ${{ secrets.CLIENT_SECRET }}
+        tenant-id: ${{ secrets.TENANT_ID }}
