@@ -1,51 +1,63 @@
 name: Deploy Power Platform Solution
-
 on:
   push:
     branches:
       - main  # Runs when code is pushed to main branch
-
 jobs:
   deploy:
-    runs-on: windows-latest 
+    runs-on: ubuntu-latest  # Uses a Linux runner
     
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-
+      
     - name: Install Power Platform CLI (PAC)
       run: |
         npm install -g pac-cli  # Install PAC CLI globally
         pac --version  # Verify installation
-
+        
     - name: Authenticate with Power Platform
       run: |
         pac auth create --client-id ${{ secrets.CLIENT_ID }} \
                         --tenant ${{ secrets.TENANT_ID }} \
                         --client-secret ${{ secrets.CLIENT_SECRET }} \
                         --url "https://org9df2a3ac.crm.dynamics.com"
-
+                        
     - name: Export Solution from Source Environment
       run: |
         pac solution export --name "MySolution" \
                             --path "./exportedSolutions" \
                             --managed false
-
+                            
     - name: Unpack Solution for Version Control
       run: |
-        pac solution unpack --path "./exportedSolutions" \
-                            --source "./sourceControl"
-
+        pac solution unpack --path "./exportedSolutions/MySolution.zip" \
+                            --folder "./sourceControl"
+                            
     - name: Run Solution Checker
       run: |
         pac solution check --path "./sourceControl"
-
+        
     - name: Pack Solution for Deployment
       run: |
-        pac solution pack --path "./sourceControl" \
-                          --output "./packedSolution"
-
+        pac solution pack --folder "./sourceControl" \
+                          --outDir "./packedSolution" \
+                          --zipFile "MySolution_managed.zip" \
+                          --managed true
+                          
     - name: Deploy Solution to Target Environment
       run: |
-        pac solution import --path "./packedSolution" \
-                            --async true
+        pac solution import --path "./packedSolution/MySolution_managed.zip" \
+                            --async \
+                            --publish-changes \
+                            --activate-plugins
+                            
+    - name: Publish Customizations
+      run: |
+        pac solution publish
+        
+    - name: Error Handling
+      if: failure()
+      run: |
+        echo "Deployment failed. Check the logs for details."
+        exit 1
