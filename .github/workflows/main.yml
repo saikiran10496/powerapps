@@ -49,7 +49,7 @@ jobs:
         app-id: ${{inputs.CLIENT_ID}}
         client-secret: ${{ secrets.envSecret }}
         tenant-id: ${{inputs.TENANT_ID}}
-        solution-file: ${{ inputs.solution_outbound_folder}}/${{ inputs.solution_name }}.zip
+        solution-file: Games/sol1.zip
         force-overwrite: true
         publish-changes: true
 
