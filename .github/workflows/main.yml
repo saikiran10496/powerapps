@@ -47,7 +47,6 @@ jobs:
         client-secret: ${{ secrets.CLIENT_SECRET }}
         tenant-id: ${{ secrets.TENANT_ID }}
         solution-file: "packed-solution.zip"
-        activate-plugins: true
         force-overwrite: true
         publish-changes: true
 
