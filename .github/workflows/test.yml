@@ -11,6 +11,11 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
+      
+    - name: Set up Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: 18 
 
     - name: Install Power Platform CLI
       run: npm install -g pac
