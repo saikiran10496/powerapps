@@ -42,6 +42,16 @@ jobs:
         solution-file: Games/sol1.zip
         solution-type: Unmanaged
 
+    - name: Run Solution Checker
+      uses: microsoft/powerplatform-actions/check-solution@v1
+      with:
+        environment-url: "https://org9df2a3ac.crm.dynamics.com"
+        app-id: ${{ secrets.CLIENT_ID }}
+        client-secret: ${{ secrets.CLIENT_SECRET }}
+        tenant-id: ${{ secrets.TENANT_ID }}
+        solution-file: Games/sol1.zip
+        output-directory: Games/solution-checker-results
+
     - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
