@@ -52,7 +52,7 @@ jobs:
         app-id: ${{ secrets.CLIENT_ID }}
         client-secret: ${{ secrets.CLIENT_SECRET }}
         tenant-id: ${{ secrets.TENANT_ID }}
-        path: Games/sol1/  
+        path: Games/sol1.zip  
         fail-on-analysis-error: true
 
 
