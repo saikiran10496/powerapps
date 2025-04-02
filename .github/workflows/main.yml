@@ -42,6 +42,9 @@ jobs:
         solution-file: Games/sol1.zip
         solution-type: Unmanaged
 
+    - name: Debug - List Unpacked Solution Files
+      run: ls -R Games/
+
     - name: Run Solution Checker
       uses: microsoft/powerplatform-actions/check-solution@v1
       with:
