@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Using a Linux runner
+    runs-on: windows-latest  
 
     steps:
     - name: Checkout Repository
