@@ -49,8 +49,8 @@ jobs:
         app-id: ${{ secrets.CLIENT_ID }}
         client-secret: ${{ secrets.CLIENT_SECRET }}
         tenant-id: ${{ secrets.TENANT_ID }}
-        solution-file: Games/sol1.zip
-        output-directory: Games/solution-checker-results
+        path: Games/sol1  # Provide the unpacked solution folder
+        fail-on-analysis-error: true
 
     - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
