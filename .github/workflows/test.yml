@@ -1,4 +1,4 @@
-name: Deploy Power Platform Solution
+name: Deploy Power Platform Solution1
 on:
   push:
     branches:
