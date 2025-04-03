@@ -19,6 +19,11 @@ jobs:
         Start-Process msiexec.exe -ArgumentList '/i PowerAppsCLI.msi /quiet /norestart' -Wait
         echo "Installed PAC CLI"
 
+    - name: Update PAC
+      shell: pwsh
+      run: |
+        pac install latest
+
 
     - name: Authenticate with Power Platform
       shell: pwsh
