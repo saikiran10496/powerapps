@@ -66,35 +66,16 @@ jobs:
         }
         
     - name: Authenticate and Export Solution
-      shell: pwsh
       run: |
-        Write-Host "PATH: $env:PATH"
-        Write-Host "PAC CLI Path: $env:PAC_CLI_PATH"
-        
-        # Try to find pac
-        $pacCommand = "pac"
-        if (Test-Path "$env:PAC_CLI_PATH\pac.exe") {
-            $pacCommand = "$env:PAC_CLI_PATH\pac.exe"
-        } elseif (Test-Path "C:\Program Files (x86)\Microsoft\Power Platform CLI\pac.exe") {
-            $pacCommand = "C:\Program Files (x86)\Microsoft\Power Platform CLI\pac.exe"
-        } else {
-            Get-ChildItem -Path "C:\Program Files" -Filter "pac.exe" -Recurse -Depth 3 -ErrorAction SilentlyContinue | ForEach-Object {
-                $pacCommand = $_.FullName
-                Write-Host "Found pac.exe at: $pacCommand"
-            }
-        }
-        
-        Write-Host "Using pac command: $pacCommand"
-        
-        # Authenticate with source environment
-        & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
-        
-        # Export solution
-        & $pacCommand solution export --name "sol1" --path "./exportedSolutions" --managed false
-        Get-ChildItem -Path ./exportedSolutions
-
-        # Authenticate with target environment
-        & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
-        
-        # Import solution
-        & $pacCommand solution import --path "./exportedSolutions/sol1.zip" --async false
+          # Set the PAC CLI path
+          $env:PAC_CLI_PATH = "C:\Users\runneradmin\AppData\Local\Microsoft\PowerAppsCLI"
+          $env:PATH += ";$env:PAC_CLI_PATH"
+    
+          # Confirm PAC CLI is available
+          Write-Host "Using PAC CLI from: $env:PAC_CLI_PATH"
+    
+          # Authenticate with source environment
+          & "$env:PAC_CLI_PATH\pac.exe" auth create --applicationId "***" --tenant "***" --clientSecret "***" --url "https://org9df2a3ac.crm.dynamics.com"
+          
+          # Export solution
+          & "$env:PAC_CLI_PATH\pac.exe" solution export --name "sol1" --path "./exportedSolutions" --managed false
