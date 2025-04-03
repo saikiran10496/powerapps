@@ -20,50 +20,22 @@ jobs:
         Invoke-WebRequest -Uri https://aka.ms/PowerAppsCLI -OutFile PowerAppsCLI.msi
         Start-Process msiexec.exe -ArgumentList '/i PowerAppsCLI.msi /quiet /norestart' -Wait
         
-        # Refresh PowerShell session's PATH environment variable
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+        # Set PAC CLI path directly
+        $cliPath = "C:\Users\runneradmin\AppData\Local\Microsoft\PowerAppsCLI"
+        $env:PATH += ";$cliPath"
         
-        # Try to find directly in Program Files (more reliable than recursive search)
-        $cliPath = "C:\Program Files (x86)\Microsoft\Power Platform CLI\"
-        if (Test-Path "$cliPath\pac.exe") {
-            $env:PATH += ";$cliPath"
-            Write-Host "Found PAC at: $cliPath\pac.exe"
-            echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-        } else {
-            Write-Host "PAC not found at default location, checking alternative locations..."
-            foreach ($drive in @("C:", "D:")) {
-                foreach ($programFiles in @("\Program Files", "\Program Files (x86)")) {
-                    $potentialPath = Join-Path -Path "$drive$programFiles" -ChildPath "Microsoft\Power Platform CLI\pac.exe"
-                    if (Test-Path $potentialPath) {
-                        $cliPath = Split-Path -Parent $potentialPath
-                        $env:PATH += ";$cliPath"
-                        Write-Host "Found PAC at: $potentialPath"
-                        echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-                        break
-                    }
-                }
-            }
-        }
-        
-        # Try another common location - sometimes it's here
-        if (-not (Test-Path "$env:PAC_CLI_PATH\pac.exe")) {
-            $otherPath = "C:\Users\runneradmin\AppData\Local\Microsoft\PowerAppsCLI"
-            if (Test-Path "$otherPath\pac.exe") {
-                $env:PATH += ";$otherPath"
-                Write-Host "Found PAC at: $otherPath\pac.exe"
-                echo "PAC_CLI_PATH=$otherPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-            }
-        }
-        
+        Write-Host "Using PAC CLI from: $cliPath"
+        echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+    
         # Install pacTelemetryUpload (sometimes needed)
-        # This adds Microsoft.PowerApps.CLI.Tool to your path
         dotnet tool install -g Microsoft.PowerApps.CLI.Tool
         
-        # Try to verify installation
+        # Verify installation
         Get-Command -Name pac -ErrorAction SilentlyContinue | Out-Host
         if (-not $?) {
-            Write-Host "Cannot find pac command in PATH, will try to use full path"
+            Write-Host "Cannot find pac command in PATH, check installation."
         }
+
         
     - name: Authenticate and Export Solution
       run: |
