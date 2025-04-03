@@ -91,7 +91,8 @@ jobs:
         
         # Export solution
         & $pacCommand solution export --name "sol1" --path "./exportedSolutions" --managed false
-        
+        Get-ChildItem -Path ./exportedSolutions
+
         # Authenticate with target environment
         & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
         
