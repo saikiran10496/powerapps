@@ -96,4 +96,4 @@ jobs:
         & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
         
         # Import solution
-        & $pacCommand solution import --path "./exportedSolutions/sol1_unmanaged.zip" --async false
+        & $pacCommand solution import --path "./exportedSolutions/*.zip" --async false
