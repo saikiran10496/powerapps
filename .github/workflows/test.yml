@@ -20,80 +20,85 @@ jobs:
         Invoke-WebRequest -Uri https://aka.ms/PowerAppsCLI -OutFile PowerAppsCLI.msi
         Start-Process msiexec.exe -ArgumentList '/i PowerAppsCLI.msi /quiet /norestart' -Wait
         
-        # Refresh PowerShell session's PATH environment variable
+        # Refresh environment variables
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
         
-        # Try to find directly in Program Files (more reliable than recursive search)
-        $cliPath = "C:\Program Files (x86)\Microsoft\Power Platform CLI\"
-        if (Test-Path "$cliPath\pac.exe") {
-            $env:PATH += ";$cliPath"
-            Write-Host "Found PAC at: $cliPath\pac.exe"
-            echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-        } else {
-            Write-Host "PAC not found at default location, checking alternative locations..."
-            foreach ($drive in @("C:", "D:")) {
-                foreach ($programFiles in @("\Program Files", "\Program Files (x86)")) {
-                    $potentialPath = Join-Path -Path "$drive$programFiles" -ChildPath "Microsoft\Power Platform CLI\pac.exe"
-                    if (Test-Path $potentialPath) {
-                        $cliPath = Split-Path -Parent $potentialPath
-                        $env:PATH += ";$cliPath"
-                        Write-Host "Found PAC at: $potentialPath"
-                        echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-                        break
-                    }
-                }
-            }
-        }
-        
-        # Try another common location - sometimes it's here
-        if (-not (Test-Path "$env:PAC_CLI_PATH\pac.exe")) {
-            $otherPath = "C:\Users\runneradmin\AppData\Local\Microsoft\PowerAppsCLI"
-            if (Test-Path "$otherPath\pac.exe") {
-                $env:PATH += ";$otherPath"
-                Write-Host "Found PAC at: $otherPath\pac.exe"
-                echo "PAC_CLI_PATH=$otherPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-            }
-        }
-        
-        # Install pacTelemetryUpload (sometimes needed)
-        # This adds Microsoft.PowerApps.CLI.Tool to your path
+        # Install through .NET tool as a more reliable alternative
         dotnet tool install -g Microsoft.PowerApps.CLI.Tool
         
-        # Try to verify installation
-        Get-Command -Name pac -ErrorAction SilentlyContinue | Out-Host
-        if (-not $?) {
-            Write-Host "Cannot find pac command in PATH, will try to use full path"
-        }
-        
-    - name: Authenticate and Export Solution
-      shell: pwsh
-      run: |
-        Write-Host "PATH: $env:PATH"
-        Write-Host "PAC CLI Path: $env:PAC_CLI_PATH"
-        
-        # Try to find pac
-        $pacCommand = "pac"
-        if (Test-Path "$env:PAC_CLI_PATH\pac.exe") {
-            $pacCommand = "$env:PAC_CLI_PATH\pac.exe"
-        } elseif (Test-Path "C:\Program Files (x86)\Microsoft\Power Platform CLI\pac.exe") {
-            $pacCommand = "C:\Program Files (x86)\Microsoft\Power Platform CLI\pac.exe"
+        # Verify installation
+        Get-Command pactt -ErrorAction SilentlyContinue
+        if ($?) {
+            Write-Host "pac tool installed via .NET global tool"
+            echo "PAC_COMMAND=pactt" | Out-File -FilePath $env:GITHUB_ENV -Append
         } else {
-            Get-ChildItem -Path "C:\Program Files" -Filter "pac.exe" -Recurse -Depth 3 -ErrorAction SilentlyContinue | ForEach-Object {
-                $pacCommand = $_.FullName
-                Write-Host "Found pac.exe at: $pacCommand"
+            Write-Host "Checking for pac.exe from MSI install"
+            $pacPath = "C:\Program Files (x86)\Microsoft\Power Platform CLI\pac.exe"
+            if (Test-Path $pacPath) {
+                Write-Host "Found pac.exe at standard location"
+                echo "PAC_COMMAND=$pacPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+            } else {
+                Write-Error "Could not find pac command. Installation may have failed."
+                exit 1
             }
         }
         
-        Write-Host "Using pac command: $pacCommand"
+    - name: Export Solution from Source Environment
+      shell: pwsh
+      run: |
+        # Display the command we're using
+        Write-Host "Using PAC command: $env:PAC_COMMAND"
         
         # Authenticate with source environment
-        & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
+        & $env:PAC_COMMAND auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
+        if (-not $?) {
+            Write-Error "Authentication with source environment failed"
+            exit 1
+        }
         
-        # Export solution
-        & $pacCommand solution export --name "sol1" --path "./exportedSolutions" --managed false
+        # List solutions to verify connection and see if sol1 exists
+        & $env:PAC_COMMAND solution list
+        
+        # Export solution - note we need to specify the full output path including filename
+        & $env:PAC_COMMAND solution export --name "sol1" --path "./exportedSolutions/sol1_unmanaged.zip" --managed false
+        if (-not $?) {
+            Write-Error "Solution export failed"
+            exit 1
+        }
+        
+        # Verify the file was created
+        if (-not (Test-Path "./exportedSolutions/sol1_unmanaged.zip")) {
+            Write-Error "Solution file was not created at ./exportedSolutions/sol1_unmanaged.zip"
+            # List the contents of the directory to see what was created
+            Get-ChildItem -Path "./exportedSolutions" -Recurse
+            exit 1
+        }
+        
+    - name: Import Solution to Target Environment
+      shell: pwsh
+      run: |
+        # Display the command we're using
+        Write-Host "Using PAC command: $env:PAC_COMMAND"
         
         # Authenticate with target environment
-        & $pacCommand auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
+        & $env:PAC_COMMAND auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
+        if (-not $?) {
+            Write-Error "Authentication with target environment failed"
+            exit 1
+        }
         
-        # Import solution
-        & $pacCommand solution import --path "./exportedSolutions/sol1_unmanaged.zip" --async false
+        # Verify the solution file exists before attempting import
+        if (Test-Path "./exportedSolutions/sol1_unmanaged.zip") {
+            Write-Host "Solution file found. Proceeding with import."
+            
+            # Import solution
+            & $env:PAC_COMMAND solution import --path "./exportedSolutions/sol1_unmanaged.zip" --async false --publish-changes
+            if (-not $?) {
+                Write-Error "Solution import failed"
+                exit 1
+            }
+        } else {
+            Write-Error "Solution file not found at ./exportedSolutions/sol1_unmanaged.zip"
+            Get-ChildItem -Path "./" -Recurse | Where-Object { $_.Name -like "*sol1*" }
+            exit 1
+        }
