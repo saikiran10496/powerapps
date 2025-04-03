@@ -75,7 +75,7 @@ jobs:
           Write-Host "Using PAC CLI from: $env:PAC_CLI_PATH"
     
           # Authenticate with source environment
-          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "***" --tenant "***" --clientSecret "***" --url "https://org9df2a3ac.crm.dynamics.com"
+          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
           
           # Export solution
           & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol1" --path "./exportedSolutions" --managed false
