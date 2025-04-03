@@ -16,51 +16,35 @@ jobs:
       uses: microsoft/powerplatform-actions/actions-install@v1
 
     - name: Authenticate with Power Platform
+      shell: pwsh
       run: |
-        pac auth create --client-id "${{ secrets.CLIENT_ID }}" \
-                        --tenant "${{ secrets.TENANT_ID }}" \
-                        --client-secret "${{ secrets.CLIENT_SECRET }}" \
+        pac auth create --applicationId "${{ secrets.CLIENT_ID }}" `
+                        --tenant "${{ secrets.TENANT_ID }}" `
+                        --clientSecret "${{ secrets.CLIENT_SECRET }}" `
                         --url "https://org9df2a3ac.crm.dynamics.com"
-      shell: bash
-
-
-
+    
                         
     - name: Export Solution from Source Environment
+      shell: pwsh
       run: |
-        pac solution export --name "MySolution" \
-                            --path "./exportedSolutions" \
-                            --managed false
+        pac solution export --name "sol1" `
+                    --path "./exportedSolutions" `
+                    --managed false
                             
-    - name: Unpack Solution for Version Control
+    - name: Authenticate with Power Platform
+      shell: pwsh
       run: |
-        pac solution unpack --path "./exportedSolutions/MySolution.zip" \
-                            --folder "./sourceControl"
+        pac auth create --applicationId "${{ secrets.CLIENT_ID }}" `
+                        --tenant "${{ secrets.TENANT_ID }}" `
+                        --clientSecret "${{ secrets.CLIENT_SECRET }}" `
+                        --url "https://org4174b73a.crm.dynamics.com"
+
                             
-    - name: Run Solution Checker
-      run: |
-        pac solution check --path "./sourceControl"
-        
-    - name: Pack Solution for Deployment
-      run: |
-        pac solution pack --folder "./sourceControl" \
-                          --outDir "./packedSolution" \
-                          --zipFile "MySolution_managed.zip" \
-                          --managed true
-                          
+
     - name: Deploy Solution to Target Environment
+      shell: pwsh
       run: |
-        pac solution import --path "./packedSolution/MySolution_managed.zip" \
-                            --async \
-                            --publish-changes \
-                            --activate-plugins
+        pac solution import --path "./exportedSolutions/sol1_unmanaged.zip" `
+                            --async false
                             
-    - name: Publish Customizations
-      run: |
-        pac solution publish
-        
-    - name: Error Handling
-      if: failure()
-      run: |
-        echo "Deployment failed. Check the logs for details."
-        exit 1
+   
