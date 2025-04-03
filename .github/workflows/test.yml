@@ -2,7 +2,7 @@ name: Deploy Power Platform Solution1
 on:
   push:
     branches:
-      - main  # Runs when code is pushed to main branch
+      - main
 jobs:
   deploy:
     runs-on: windows-latest  
@@ -16,27 +16,54 @@ jobs:
         Invoke-WebRequest -Uri https://aka.ms/PowerAppsCLI -OutFile PowerAppsCLI.msi
         Start-Process msiexec.exe -ArgumentList '/i PowerAppsCLI.msi /quiet /norestart' -Wait
         
-        # Find where pac.exe is installed
-        $pacPath = Get-ChildItem -Path "C:\" -Filter "pac.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-        Write-Host "PAC executable found at: $pacPath"
+        # Check in common installation locations instead of searching the entire drive
+        $possiblePaths = @(
+          "C:\Program Files\Microsoft\PowerApps CLI\pac.exe",
+          "C:\Program Files (x86)\Microsoft\PowerApps CLI\pac.exe",
+          "$env:LOCALAPPDATA\Microsoft\PowerApps CLI\pac.exe",
+          "$env:ProgramFiles\Microsoft\PowerApps CLI\pac.exe"
+        )
+        
+        $pacPath = $null
+        foreach ($path in $possiblePaths) {
+          if (Test-Path $path) {
+            $pacPath = $path
+            Write-Host "Found PAC at: $pacPath"
+            break
+          }
+        }
+        
+        if ($pacPath -eq $null) {
+          Write-Host "PAC not found in common locations, trying a limited search..."
+          # Limited search in Program Files
+          $pacPath = Get-ChildItem -Path "C:\Program Files" -Filter "pac.exe" -Recurse -ErrorAction SilentlyContinue -Depth 3 | Select-Object -First 1 -ExpandProperty FullName
+        }
+        
+        if ($pacPath -eq $null) {
+          Write-Error "Could not find PAC executable"
+          exit 1
+        }
         
         # Get the directory and add to PATH
         $pacDir = Split-Path -Parent $pacPath
+        Write-Host "PAC directory: $pacDir"
         $env:PATH += ";$pacDir"
-        Write-Host "Updated PATH: $env:PATH"
         
-        # Create a step output variable for use in later steps
+        # Set environment variable for later steps
         echo "PAC_DIR=$pacDir" >> $env:GITHUB_ENV
         
-        # Test pac command using full path
-        & $pacPath
-        echo "Installed PAC CLI"
+        # Verify pac installation by running version
+        & $pacPath version
         
     - name: Authenticate with Power Platform (Source)
       shell: pwsh
       run: |
-        # Use full path to pac
-        & "$env:PAC_DIR\pac" auth create --applicationId "${{ secrets.CLIENT_ID }}" `
+        if (-not (Test-Path "$env:PAC_DIR\pac.exe")) {
+          Write-Error "PAC executable not found at $env:PAC_DIR\pac.exe"
+          exit 1
+        }
+        
+        & "$env:PAC_DIR\pac.exe" auth create --applicationId "${{ secrets.CLIENT_ID }}" `
                         --tenant "${{ secrets.TENANT_ID }}" `
                         --clientSecret "${{ secrets.CLIENT_SECRET }}" `
                         --url "https://org9df2a3ac.crm.dynamics.com"
@@ -44,20 +71,7 @@ jobs:
     - name: Export Solution from Source Environment
       shell: pwsh
       run: |
-        & "$env:PAC_DIR\pac" solution export --name "sol1" `
+        & "$env:PAC_DIR\pac.exe" solution export --name "sol1" `
                     --path "./exportedSolutions" `
                     --managed false
                             
-    - name: Authenticate with Power Platform (Target)
-      shell: pwsh
-      run: |
-        & "$env:PAC_DIR\pac" auth create --applicationId "${{ secrets.CLIENT_ID }}" `
-                        --tenant "${{ secrets.TENANT_ID }}" `
-                        --clientSecret "${{ secrets.CLIENT_SECRET }}" `
-                        --url "https://org4174b73a.crm.dynamics.com"
-                            
-    - name: Deploy Solution to Target Environment
-      shell: pwsh
-      run: |
-        & "$env:PAC_DIR\pac" solution import --path "./exportedSolutions/sol1_unmanaged.zip" `
-                            --async false
