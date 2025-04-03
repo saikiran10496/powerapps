@@ -26,35 +26,25 @@ jobs:
         
         Write-Host "Using PAC CLI from: $cliPath"
         echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-    
-        # Install pacTelemetryUpload (sometimes needed)
-        dotnet tool install -g Microsoft.PowerApps.CLI.Tool
-        
-        # Verify installation
-        Get-Command -Name pac -ErrorAction SilentlyContinue | Out-Host
-        if (-not $?) {
-            Write-Host "Cannot find pac command in PATH, check installation."
-        }
-
         
     - name: Authenticate and Export Solution
+      shell: pwsh
       run: |
           # Set the PAC CLI path
-          $env:PAC_CLI_PATH = "C:\Users\runneradmin\AppData\Local\Microsoft\PowerAppsCLI"
           $env:PATH += ";$env:PAC_CLI_PATH"
     
           # Confirm PAC CLI is available
           Write-Host "Using PAC CLI from: $env:PAC_CLI_PATH"
+          Get-ChildItem "$env:PAC_CLI_PATH" | Select-Object Name
     
           # Authenticate with source environment
-          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
+          & "$env:PAC_CLI_PATH\pac.exe" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
           
           # Export solution
-          & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol1" --path "./exportedSolutions" --managed false
-
+          & "$env:PAC_CLI_PATH\pac.exe" solution export --name "sol1" --path "./exportedSolutions/sol1.zip" --managed false
+          
           # Authenticate with target environment
-          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
+          & "$env:PAC_CLI_PATH\pac.exe" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
           
-          # Export solution
-          & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
-
+          # Import solution
+          & "$env:PAC_CLI_PATH\pac.exe" solution import --path "./exportedSolutions/sol1.zip" --async false
