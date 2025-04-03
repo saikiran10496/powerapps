@@ -13,6 +13,16 @@ jobs:
 
     - name: Install Power Platform tools
       uses: microsoft/powerplatform-actions/actions-install@v1
+      with:
+        verbose: true   # Enable verbose logging
+    
+    - name: Check Power Platform CLI installation
+      run: |
+        echo "Checking pac installation location..."
+        which pac || echo "pac not found in PATH"
+        pac --version
+        echo "PATH environment variable:"
+        echo $PATH
     
     - name: Export Solution
       uses: microsoft/powerplatform-actions/export-solution@v1
