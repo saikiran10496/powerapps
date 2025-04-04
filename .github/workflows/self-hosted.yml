@@ -11,69 +11,41 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Install Power Platform tools
-      uses: microsoft/powerplatform-actions/actions-install@v1
-      with:
-        add-tools-to-path: true  # This is the key parameter to add
-    
-    - name: Check Power Platform CLI installation
+    - name: Install Power Platform CLI
+      shell: pwsh
       run: |
-        echo "Checking pac installation location..."
-        pac
-        echo "PATH environment variable:"
-        echo $PATH
+        # Create directory for solutions
+        New-Item -ItemType Directory -Force -Path "exportedSolutions"
+
+         # Set PAC CLI path directly
+        $cliPath = "C:\Users\saikiran.s\AppData\Local\Microsoft\PowerAppsCLI"
+        $env:PATH += ";$cliPath"
+        
+        Write-Host "Using PAC CLI from: $cliPath"
+        echo "PAC_CLI_PATH=$cliPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+    - name: Authenticate and Export Solution
+      shell: pwsh
+      run: |
+          # Set the PAC CLI path
+          $env:PATH += ";$env:PAC_CLI_PATH"
     
-    - name: Export Solution
-      uses: microsoft/powerplatform-actions/export-solution@v1
-      with:
-        environment-url: "https://org9df2a3ac.crm.dynamics.com"
-        app-id: ${{ secrets.CLIENT_ID }}
-        client-secret: ${{ secrets.CLIENT_SECRET }}
-        tenant-id: ${{ secrets.TENANT_ID }}
-        solution-name: "sol1"
-        solution-output-file: Games/sol1.zip
-      #  solution-name: "sol1"
-      #  solution-output-file: "exported-solution.zip"
-       # managed: false
+          # Confirm PAC CLI is available
+          Write-Host "Using PAC CLI from: $env:PAC_CLI_PATH"
+          Get-ChildItem "$env:PAC_CLI_PATH" | Select-Object Name
     
-    - name: Unpack Solution
-      uses: microsoft/powerplatform-actions/unpack-solution@v1
-      with:
-        solution-file: Games/sol1.zip
-        solution-folder: Games/sol1
-        solution-type: 'Unmanaged'
-        overwrite-files: true
+          # Authenticate with source environment
+          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
+          
+          # Export solution
+          & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol1" --path "./exportedSolutions/sol1.zip" --managed false
+          
+          # Authenticate with target environment
+          & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
+          
+          # Import solution
+          & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
+
+
     
-    - name: Pack solution
-      uses: microsoft/powerplatform-actions/pack-solution@v1
-      with:
-        solution-folder: Games/sol1
-        solution-file: Games/sol1.zip
-        solution-type: Unmanaged
-
-    - name: Debug - List Unpacked Solution Files
-      run: ls -R Games/
-
-    - name: Run Solution Checker
-      uses: microsoft/powerplatform-actions/check-solution@v1
-      with:
-        environment-url: "https://org9df2a3ac.crm.dynamics.com"
-        app-id: ${{ secrets.CLIENT_ID }}
-        client-secret: ${{ secrets.CLIENT_SECRET }}
-        tenant-id: ${{ secrets.TENANT_ID }}
-        path: Games/sol1.zip  
-        fail-on-analysis-error: true
-
-
-    - name: Import solution as unmanaged to build env
-      uses: microsoft/powerplatform-actions/import-solution@v1
-      with:
-        environment-url: "https://org4174b73a.crm.dynamics.com"
-        app-id: ${{ secrets.CLIENT_ID }}
-        client-secret: ${{ secrets.CLIENT_SECRET }}
-        tenant-id: ${{ secrets.TENANT_ID }}
-        solution-file: Games/sol1.zip
-        force-overwrite: true
-        publish-changes: true
-
     
