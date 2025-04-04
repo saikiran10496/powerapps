@@ -64,6 +64,16 @@ jobs:
         path: Games/sol1.zip  
         fail-on-analysis-error: true
 
+    - name: Rename SARIF Output for Upload
+      run: |
+        mkdir -p sarif
+        mv Games/sol1.sarif sarif/solution-checker-results.sarif
+
+    - name: Upload SARIF Report to GitHub Security Tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: sarif/solution-checker-results.sarif
+
 
     - name: Import solution as unmanaged to build env
       uses: microsoft/powerplatform-actions/import-solution@v1
