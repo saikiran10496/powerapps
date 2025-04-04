@@ -19,7 +19,7 @@ jobs:
     - name: Check Power Platform CLI installation
       run: |
         echo "Checking pac installation location..."
-        pac --version
+        pac
         echo "PATH environment variable:"
         echo $PATH
     
