@@ -44,6 +44,13 @@ jobs:
           
           # Export solution
           & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol1" --path "./exportedSolutions/sol1.zip" --managed false
+
+          # Run solution checker
+          & "$env:PAC_CLI_PATH\pac.cmd" solution check --path "./exportedSolutions/sol1.zip" --outputDirectory "./exportedSolutions/solutionCheckerOutput"
+
+          # Optional: list the contents of the output directory
+          Get-ChildItem "./exportedSolutions/solutionCheckerOutput"
+
           
           # Authenticate with target environment
           & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
