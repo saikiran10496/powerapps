@@ -59,5 +59,9 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
 
 
-    
+    - name: Upload Solution Checker SARIF to GitHub Code Scanning
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: ./exportedSolutions/solutionCheckerOutput/results.sarif
+
     
