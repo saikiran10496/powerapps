@@ -59,9 +59,23 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
 
 
-    - name: Upload Solution Checker SARIF to GitHub Code Scanning
-      uses: github/codeql-action/upload-sarif@v2
+    - name: Extract SARIF file from Solution Checker results
+      run: |
+        $zipPath = "exportedSolutions/solutionCheckerOutput/*.zip"
+        $outputDir = "checker-results"
+        mkdir $outputDir
+        Expand-Archive -Path $zipPath -DestinationPath $outputDir -Force
+        $sarif = Get-ChildItem $outputDir -Recurse -Filter *.sarif | Select-Object -First 1
+        if ($sarif) {
+          Copy-Item $sarif.FullName -Destination "solution-check-results.sarif"
+        } else {
+          Write-Error "No SARIF file found in extracted report."
+        }
+      shell: pwsh
+
+    - name: Upload SARIF to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: ./exportedSolutions/solutionCheckerOutput/results.sarif
+        sarif_file: solution-check-results.sarif
 
     
