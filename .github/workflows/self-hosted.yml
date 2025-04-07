@@ -1,4 +1,4 @@
-name: Deploy Power Platform Solution new
+name: Deploy Power Platform Solution Self-hosted
 on:
   push:
     branches:
