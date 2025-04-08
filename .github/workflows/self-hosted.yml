@@ -1,4 +1,4 @@
-name: Deploy Power Platform Solution Self-hosted
+name: Deploy Power Platform Solution Self-hosted data export
 on:
   push:
     branches:
