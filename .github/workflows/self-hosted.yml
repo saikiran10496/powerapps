@@ -46,7 +46,7 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol3" --path "./exportedSolutions/sol3.zip" --managed false
 
           #Export data
-          & "$env:PAC_CLI_PATH\pac.cmd" data export --schemaFile ./data/schema.xml --dataFile ./data/data.zip --overwrite
+          # & "$env:PAC_CLI_PATH\pac.cmd" data export --schemaFile ./data/schema.xml --dataFile ./data/data.zip --overwrite
 
           # Run solution checker
           & "$env:PAC_CLI_PATH\pac.cmd" solution check --path "./exportedSolutions/sol3.zip" --outputDirectory "./exportedSolutions/solutionCheckerOutput"
@@ -62,7 +62,7 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
 
           # Import data
-          & "$env:PAC_CLI_PATH\pac.cmd" data import --data ./data/data.zip
+          # & "$env:PAC_CLI_PATH\pac.cmd" data import --data ./data/data.zip
 
 
     - name: Extract SARIF file from Solution Checker results
