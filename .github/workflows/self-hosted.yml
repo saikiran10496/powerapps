@@ -59,7 +59,7 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org4174b73a.crm.dynamics.com"
           
           # Import solution
-          & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
+          & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol3.zip" --async false
 
           # Import data
           # & "$env:PAC_CLI_PATH\pac.cmd" data import --data ./data/data.zip
