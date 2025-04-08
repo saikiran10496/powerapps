@@ -43,10 +43,13 @@ jobs:
           & "$env:PAC_CLI_PATH\pac.cmd" auth create --applicationId "${{ secrets.CLIENT_ID }}" --tenant "${{ secrets.TENANT_ID }}" --clientSecret "${{ secrets.CLIENT_SECRET }}" --url "https://org9df2a3ac.crm.dynamics.com"
           
           # Export solution
-          & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol1" --path "./exportedSolutions/sol1.zip" --managed false
+          & "$env:PAC_CLI_PATH\pac.cmd" solution export --name "sol3" --path "./exportedSolutions/sol3.zip" --managed false
+
+          #Export data
+          & "$env:PAC_CLI_PATH\pac.cmd" data export --schemaFile ./data/schema.xml --dataFile ./data/data.zip --overwrite
 
           # Run solution checker
-          & "$env:PAC_CLI_PATH\pac.cmd" solution check --path "./exportedSolutions/sol1.zip" --outputDirectory "./exportedSolutions/solutionCheckerOutput"
+          & "$env:PAC_CLI_PATH\pac.cmd" solution check --path "./exportedSolutions/sol3.zip" --outputDirectory "./exportedSolutions/solutionCheckerOutput"
 
           # Optional: list the contents of the output directory
           Get-ChildItem "./exportedSolutions/solutionCheckerOutput"
@@ -57,6 +60,9 @@ jobs:
           
           # Import solution
           & "$env:PAC_CLI_PATH\pac.cmd" solution import --path "./exportedSolutions/sol1.zip" --async false
+
+          # Import data
+          & "$env:PAC_CLI_PATH\pac.cmd" data import --data ./data/data.zip
 
 
     - name: Extract SARIF file from Solution Checker results
